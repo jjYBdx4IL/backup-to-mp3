@@ -1,0 +1,1 @@
+for br in 1 2 4 8 12 16 20 24 28 32 36 42 48 54 60 64 72 80; do py run.py encode -i recovery_minimal.rar -o a_br$br.mp3 -b$br; done

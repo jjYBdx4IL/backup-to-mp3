@@ -1,0 +1,7 @@
+/venv/
+/amodem/
+*.rar
+*.mp3
+*.sbc
+*.aac
+*.wav
