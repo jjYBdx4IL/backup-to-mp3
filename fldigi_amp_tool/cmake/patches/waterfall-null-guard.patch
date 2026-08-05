@@ -1,0 +1,91 @@
+--- a/src/include/waterfall.h	2026-07-09 15:46:15.000000000 +0200
++++ b/src/include/waterfall.h	2026-08-04 22:31:57.393385979 +0200
+@@ -280,24 +280,27 @@
+ 	void show_scope(bool on);
+ 	void opmode();
+ 	void sig_data(double *sig, int len) {
++		if (!this) return;
+ 		wfdisp->sig_data(sig, len);
+ 	}
+-	void handle_sig_data() {wfdisp->handle_sig_data();}
++	void handle_sig_data() { if (!this) return; wfdisp->handle_sig_data();}
+ 	void Overload(bool ovr) {
++		if (!this) return;
+ 		wfdisp->Overload(ovr);
+ 	}
+ 	int carrier() {
++		if (!this) return 0;
+ 		return wfdisp->carrier();
+ 	}
+ 	void carrier(int f);
+ 	void rfcarrier(unsigned long long cf);
+ 	unsigned long long rfcarrier();
+-	bool tmp_carrier(void) { return wfdisp->tmp_carrier; }
++	bool tmp_carrier(void) { if (!this) return false; return wfdisp->tmp_carrier; }
+ 	void set_XmtRcvBtn(bool val);
+ 	void USB(bool b);
+ 	bool USB();
+-	void Reverse( bool v) { reverse = v;}
+-	bool Reverse() { return reverse;}
++	void Reverse( bool v) { if (!this) return; reverse = v;}
++	bool Reverse() { if (!this) return false; return reverse;}
+ 
+ 	void xmtrcv_selection_color(Fl_Color clr) {xmtrcv->selection_color(clr);}
+ 	void reverse_selection_color(Fl_Color clr) {btnRev->selection_color(clr);}
+@@ -305,19 +308,23 @@
+ 
+ 	void Bandwidth(int bw)
+ 	{
++		if (!this) return;
+ 		wfdisp->Bandwidth(bw);
+ 	}
+ 	int peakFreq(int f0, int delta)
+ 	{
++		if (!this) return 0;
+ 		return (wfdisp->peakFreq(f0, delta));
+ 	}
+ 	double powerDensity(double f0, double bw)
+ 	{
++		if (!this) return 0.0;
+ 		return (wfdisp->powerDensity(f0,bw));
+ 	}
+ 
+ 	double powerDensityMaximum(int bw_nb, const int (*bw)[2]) const
+ 	{
++		if (!this) return 0.0;
+ 		return (wfdisp->powerDensityMaximum(bw_nb,bw));
+ 	}
+ 
+@@ -330,24 +337,25 @@
+ 	int Carrier();
+ 	void Carrier(int f);
+ 
+-	void draw_fmt_marker() { wfdisp->make_fmt_marker(); }
++	void draw_fmt_marker() { if (!this) return; wfdisp->make_fmt_marker(); }
+ 
+-	void movetocenter() { wfdisp->movetocenter();}
+-	void redraw_marker() { wfdisp->makeMarker(); }
+-	void setPrefilter(int v) {wfdisp->setPrefilter(v);}
++	void movetocenter() { if (!this) return; wfdisp->movetocenter();}
++	void redraw_marker() { if (!this) return; wfdisp->makeMarker(); }
++	void setPrefilter(int v) { if (!this) return; wfdisp->setPrefilter(v);}
+ 
+-	void setcolors() { wfdisp->setcolors(); }
++	void setcolors() { if (!this) return; wfdisp->setcolors(); }
+ 	void setRefLevel();
+ 	void setAmpSpan();
+-	double dFreq() { return wfdisp->dFreq();}
++	double dFreq() { if (!this) return 0.0; return wfdisp->dFreq();}
+ 
+ 	void setQSY(bool on) {
++		if (!this) return;
+ 		if (on)
+ 			qsy->activate();
+ 		else
+ 			qsy->deactivate();
+ 	}
+-	double Pwr(int i) { return wfdisp->Pwr(i); }
++	double Pwr(int i) { if (!this) return 0.0; return wfdisp->Pwr(i); }
+ 
+ 	int handle(int event);
+ 

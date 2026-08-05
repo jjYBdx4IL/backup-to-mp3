@@ -1,0 +1,28 @@
+This project (fldigi_amp_harness) is licensed under the GNU General
+Public License v3.0 or later (GPL-3.0-or-later) - see LICENSE.
+
+This is not a free stylistic choice: the built binaries statically link
+unmodified compiled object code from fldigi 4.2.13 (trx, modem, mfsk,
+rtty, filters, soundcard, rsid, morse, ...), and src/amp_proto.cxx is a
+direct port of FLAMP 2.2.14's AMP-2 protocol framing logic
+(src/utils/amp.cxx / src/include/amp.h). Both upstream projects are
+licensed GPL-3.0-or-later, so any combined/derivative work - including
+this one - must be distributed under the same terms.
+
+Upstream copyrights:
+
+  fldigi 4.2.13
+    Copyright (C) 2006-2010 Dave Freese, W1HKJ
+    Copyright (C) 2007-2010 Stelios Bounanos, M0GLD
+    https://sourceforge.net/projects/fldigi/
+
+  FLAMP 2.2.14 (src/utils/amp.cxx, src/include/amp.h - ported into
+  src/amp_proto.cxx)
+    Copyright (C) 2010-2013 Dave Freese, W1HKJ
+    Copyright (C) 2013 Robert Stiles, KK5VD
+    https://sourceforge.net/projects/fldigi/files/flamp/
+
+All other source files in this repository (src/main.cxx, stubs.cxx,
+harness_io.*, analyze_repeats.cxx, bitrate_sweep.cxx, rsid_check.cxx,
+airgap_sim.py, amp_pipeline.sh, tests/, cmake/) are original work
+released under the same GPL-3.0-or-later license.

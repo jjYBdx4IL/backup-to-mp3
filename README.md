@@ -88,11 +88,16 @@ There are three subdirs:
 
 ## My Preferred Choice
 
-* WinRAR 7+ recovery record of 100% redundancy plus password protection (`rar a -m5 -rr100 -p recovery.rar your files ...`). Anything beyond 5% is probably waste of space/time. The flamp repetition is much safer IMHO. But since I use that method to have an additional backup copy of my primary keys, whatever...
+* `7z a -mx=9 -ms=on -p -mhe=on my_archive.7z .`. I used to use WinRAR because of its recovery record feature, but it literally never worked for me, so I dropped it. The flamp repetition is much safer IMHO anyway.
 * fldigi+flamp MFSK128L on repeat into a single mono MP3 with 64kpbs data rate and 32 kHz sampling rate. It's horribly slow, but it decodes well via mic and SBC, and it has automatic error recovery built in (separately!) into MFSK128L and flamp (if you record it multiple times). You also don't need to remember the encoding params or format because the encoded header contains all that information. You just need to remember that you used flamp or HAM radio stuff - a search of the latter should eventually turn up flamp.
 * Copy that MP3 multiple times onto the target device to have redundancy against bit rot on that device.
 * Perform a test recovery from those files (incl test of the stored files/keys/pwds etc. - the encoded archive/files themselves might have been faulty when accessed during archival or transmission (faulty RAM, random bit flip, millions of potential causes because modern consumer PCs are fast but without error correction/ECC - sometimes even the harddisks suppress checksum errors and just deliver the bad sector data)).
 * Be aware that any non-monitored backup dataset can just go bad without any warning. Just a one-off copy to your non-monitored mp3 storage might be even less reliable than you think (apart from bit rot, an automatic device update might clean your device, you might forget you had that backup on it when resetting the device to make it work again without noticing, etc etc etc)
+* The fldigi_amp_tool/ subdir contains a harness that allows to generate the WAV file on the command line. Use at your very own risk.
 
 That way I get 6 KB of raw, non-redundant archive data 5 times into one hour of playback (= one 23MB MP3 file).
 
+
+
+--
+git@nas:backup-to-mp3.git@b7eceb22d558e3b7e83ead6ad0ac69252248ba36
