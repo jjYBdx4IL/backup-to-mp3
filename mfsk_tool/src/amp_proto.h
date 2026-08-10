@@ -56,7 +56,16 @@ struct AmpReceiveState {
 	std::string dttm, filename, call_info, prog;
 	int filesize = 0, numblocks = 0, blocksize = 0;
 	bool have_file = false, have_size = false;
-	std::map<int, std::string> blocks; // 1-based block# -> raw block content (after "{hash:n}")
+	std::map<int, std::string> blocks; // 1-based block# -> raw block content (after "{hash:n}"), first copy seen only
+
+	// Redundancy tallies: every CRC-valid copy of a line increments its
+	// counter here, even ones amp_parse_lines() otherwise discards as
+	// duplicates of a block/field it already has - so callers can tell "one
+	// copy survived" apart from "every copy survived" (amp_build_message()
+	// sends repeat_header copies of each header line per transmission, and
+	// one copy of every data block per transmission).
+	std::map<int, int> block_hits;         // 1-based block# -> count of valid copies seen
+	int file_hits = 0, id_hits = 0, size_hits = 0, prog_hits = 0; // header line type -> count of valid copies seen
 };
 
 // Feed arbitrary decoded text (from EITHER modem's RX - concatenate

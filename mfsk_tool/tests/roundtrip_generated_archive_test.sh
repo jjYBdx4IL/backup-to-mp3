@@ -7,7 +7,7 @@
 # header + gzip framing) instead of a fixture file committed just for this test.
 set -euo pipefail
 
-[ $# -eq 3 ] || { echo "usage: $0 <fldigi_amp_tool> <src-dir> <workdir>" >&2; exit 2; }
+[ $# -eq 3 ] || { echo "usage: $0 <mfsk_tool> <src-dir> <workdir>" >&2; exit 2; }
 TOOL="$1"
 SRC_DIR="$2"
 WORKDIR="$3"

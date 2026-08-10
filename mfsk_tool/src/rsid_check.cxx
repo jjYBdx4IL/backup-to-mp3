@@ -3,7 +3,7 @@
 // *receiver* (cRsId::receive, same object code cRsId::send() in main.cxx
 // drives on TX) over a WAV file, exactly like trx.cxx's high-speed RX loop
 // does (progdefaults.rsid gate + ReedSolomon->receive() call), to check
-// whether the TxID bursts fldigi_amp_tool writes actually get recognized
+// whether the TxID bursts mfsk_tool writes actually get recognized
 // by fldigi's own RSID decoder.
 #include <cstdio>
 #include <cstring>

@@ -80,24 +80,24 @@ FEC: forward error correction
 
 ## Other Notes
 
-There are three subdirs:
+There multiple subdirs, each corresponding to a separate trial and error instance.
 
 * amodem-eval/ is my evaluation code around amodem.
 * ggwave-build/ is my build/evaluation code around GGWave.
 * ofdm/ is my own shot at OFDM in python.
+* mfsk_tool/ subdir contains an fldigi harness that allows to generate the WAV file on the command line. It's built around fldigi's MFSK128L implementation and re-implements to some extent AMP file transfer protocaol.
+* ofdmflex_tool/ subdir is similar to mfsk_tool/ but is the latest development and is based on Liquid DSP. It's also much more flexible and cleaner IMHO. The directory contains its own README. It achieves 2400 baud using the phone1 preset. The most important part is to use a long enough cyclic prefix to compensate for multipath feedback like room reverb or whatever else there is. It has forward error correction built in, although overall it seems to rather worsen the results, and not improve them. My understanding might be too limited there. Also the high speed mode regularly drops out blocks, so the redundancy re multiple transmission is already needed from the get go.
+* direwolf_tool.py: the issue with fldigi+flamp I have is it's a GUI/manual process/realtime process, which is error-prone, prone to audio artifacts etc. But there is an alternative in the slow and reliable category that's actually working on the command line and directly writing/reading WAV files without realtime audio processing: direwolf. The python script wraps a simple base64 encoder/decoder/chunker with header data and chunk numbering around it. Use at 300 baud and you'll get a very fast encoding process of a ~11MB mp3 for a 6.7KB input archive encoded 3 times. This way the very slow 300 baud only matters when recording it back, which takes ~24 minutes for one transmission of triple encoding. The direwolf protocol itself already has redundancy built-in, which you activate via gen_packets' -X param.
 
-## My Preferred Choice
+## My Preferred Choice (UPDATED)
 
-* `7z a -mx=9 -ms=on -p -mhe=on my_archive.7z .`. I used to use WinRAR because of its recovery record feature, but it literally never worked for me, so I dropped it. The flamp repetition is much safer IMHO anyway.
-* fldigi+flamp MFSK128L on repeat into a single mono MP3 with 64kpbs data rate and 32 kHz sampling rate. It's horribly slow, but it decodes well via mic and SBC, and it has automatic error recovery built in (separately!) into MFSK128L and flamp (if you record it multiple times). You also don't need to remember the encoding params or format because the encoded header contains all that information. You just need to remember that you used flamp or HAM radio stuff - a search of the latter should eventually turn up flamp.
+* Packaging prior to encoding: `7z a -mx=9 -ms=on -p -mhe=on my_archive.7z .`. I used to use WinRAR because of its recovery record feature, but it literally never worked for me, so I dropped it (apparently it's very dependent on strict recovery record header locations and intactness.... which seems pretty odd, not to say extremely stupid). The flamp repetition is much safer IMHO anyway.
+* direwolf_tool.py for encoding and decoding using Direwolf's gen_packets and atest command line tools with -X 64 and -B 300 settings. Then compress it to monaural mp3 at 64 kbits using ffmpeg. (The script does that if you specify an mp3 extension)
 * Copy that MP3 multiple times onto the target device to have redundancy against bit rot on that device.
 * Perform a test recovery from those files (incl test of the stored files/keys/pwds etc. - the encoded archive/files themselves might have been faulty when accessed during archival or transmission (faulty RAM, random bit flip, millions of potential causes because modern consumer PCs are fast but without error correction/ECC - sometimes even the harddisks suppress checksum errors and just deliver the bad sector data)).
 * Be aware that any non-monitored backup dataset can just go bad without any warning. Just a one-off copy to your non-monitored mp3 storage might be even less reliable than you think (apart from bit rot, an automatic device update might clean your device, you might forget you had that backup on it when resetting the device to make it work again without noticing, etc etc etc)
-* The fldigi_amp_tool/ subdir contains a harness that allows to generate the WAV file on the command line. Use at your very own risk.
-
-That way I get 6 KB of raw, non-redundant archive data 5 times into one hour of playback (= one 23MB MP3 file).
 
 
 
 --
-git@nas:backup-to-mp3.git@b7eceb22d558e3b7e83ead6ad0ac69252248ba36
+git@nas:backup-to-mp3.git@3df0fdfddb0866c70753f9ffdbfae162eb22bca5

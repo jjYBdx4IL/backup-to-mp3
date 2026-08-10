@@ -5,7 +5,7 @@
 # REQUIREMENTS.md's verification item #1.
 set -euo pipefail
 
-[ $# -eq 3 ] || { echo "usage: $0 <fldigi_amp_tool> <input-file> <workdir>" >&2; exit 2; }
+[ $# -eq 3 ] || { echo "usage: $0 <mfsk_tool> <input-file> <workdir>" >&2; exit 2; }
 TOOL="$1"
 INPUT="$2"
 WORKDIR="$3"

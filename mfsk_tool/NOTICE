@@ -1,4 +1,4 @@
-This project (fldigi_amp_harness) is licensed under the GNU General
+This project (mfsk_tool) is licensed under the GNU General
 Public License v3.0 or later (GPL-3.0-or-later) - see LICENSE.
 
 This is not a free stylistic choice: the built binaries statically link
@@ -23,6 +23,6 @@ Upstream copyrights:
     https://sourceforge.net/projects/fldigi/files/flamp/
 
 All other source files in this repository (src/main.cxx, stubs.cxx,
-harness_io.*, analyze_repeats.cxx, bitrate_sweep.cxx, rsid_check.cxx,
-airgap_sim.py, amp_pipeline.sh, tests/, cmake/) are original work
+harness_io.*, mp3_io.*, analyze_repeats.cxx, bitrate_sweep.cxx,
+rsid_check.cxx, airgap_sim.py, tests/, cmake/) are original work
 released under the same GPL-3.0-or-later license.

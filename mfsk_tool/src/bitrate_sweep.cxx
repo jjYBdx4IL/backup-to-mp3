@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // bitrate_sweep - standalone diagnostic CLI (not part of the shipped
-// fldigi_amp_tool): sweeps MP3 bitrates and reports block-level
+// mfsk_tool): sweeps MP3 bitrates and reports block-level
 // recovery quality, to help pick an optimal bitrate (smallest file
 // with comfortable margin), not just a pass/fail cliff.
 //
@@ -36,6 +36,7 @@
 #include "configuration.h"
 
 #include "harness_io.h"
+#include "mp3_io.h"
 
 // CRC16 - same algorithm as amp_proto.cxx (verbatim port of FLAMP's
 // Ccrc16), duplicated here so this diagnostic has no dependency on the
@@ -271,12 +272,8 @@ static double local_min_metric(const MetricStats& mstats, int line_index, int to
 static bool mp3_roundtrip(const std::string& in_wav, const std::string& out_wav, int kbps)
 {
 	std::string mp3 = in_wav + "." + std::to_string(kbps) + ".mp3";
-	char cmd[2048];
-	snprintf(cmd, sizeof(cmd),
-		"ffmpeg -y -loglevel error -i '%s' -ar 8000 -b:a %dk -c:a libmp3lame '%s' && "
-		"ffmpeg -y -loglevel error -i '%s' -ar 8000 '%s'",
-		in_wav.c_str(), kbps, mp3.c_str(), mp3.c_str(), out_wav.c_str());
-	return system(cmd) == 0;
+	if (!mp3_encode_wav(in_wav, mp3, kbps)) return false;
+	return mp3_decode_to_wav(mp3, out_wav);
 }
 
 // Runs the post-MP3 WAV through harness/airgap_sim.py (speaker/mic acoustic
@@ -478,7 +475,7 @@ int main(int argc, char** argv)
 		fprintf(stderr, "[sweep] %-6d%s\n", kbps, row.c_str());
 		fprintf(stderr, "[sweep] %-6s%s\n", "", metric_row.c_str());
 	}
-	fprintf(stderr, "\n[sweep] note: single pass, no repeat - real fldigi_amp_tool applies 3x repeat\n"
+	fprintf(stderr, "\n[sweep] note: single pass, no repeat - real mfsk_tool applies 3x repeat\n"
 		"[sweep] + per-block CRC on top of this, so its effective reliability at a given\n"
 		"[sweep] bitrate is higher than the MFSK128L column alone suggests (see task #2\n"
 		"[sweep] in SUMMARY.md for how much repeats buy you against transient vs static loss).\n");

@@ -6,7 +6,7 @@
 # this only checks it runs cleanly end-to-end over a real encoded WAV.
 set -euo pipefail
 
-[ $# -eq 4 ] || { echo "usage: $0 <fldigi_amp_tool> <rsid_check> <input-file> <workdir>" >&2; exit 2; }
+[ $# -eq 4 ] || { echo "usage: $0 <mfsk_tool> <rsid_check> <input-file> <workdir>" >&2; exit 2; }
 TOOL="$1"
 RSID_CHECK="$2"
 INPUT="$3"

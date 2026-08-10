@@ -27,6 +27,8 @@ harness_require_header("samplerate.h" "libsamplerate0-dev")
 harness_require_header("png.h" "libpng-dev")
 harness_require_header("X11/Xlib.h" "libx11-dev")
 harness_require_header("alsa/asoundlib.h" "libasound2-dev")
+harness_require_header("lame/lame.h" "libmp3lame-dev")
+harness_require_header("mpg123.h" "libmpg123-dev")
 
 harness_require_program("patch" "patch")
 harness_require_program("make;gmake" "build-essential")
@@ -60,3 +62,15 @@ pkg_check_modules(SNDFILE REQUIRED IMPORTED_TARGET sndfile)
 pkg_check_modules(SAMPLERATE REQUIRED IMPORTED_TARGET samplerate)
 pkg_check_modules(PNG REQUIRED IMPORTED_TARGET libpng16)
 pkg_check_modules(X11 REQUIRED IMPORTED_TARGET x11)
+pkg_check_modules(MPG123 REQUIRED IMPORTED_TARGET libmpg123)
+
+# libmp3lame ships no .pc file on Debian/Ubuntu - locate it by hand.
+find_library(LAME_LIBRARY NAMES mp3lame)
+find_path(LAME_INCLUDE_DIR NAMES lame/lame.h)
+if(NOT LAME_LIBRARY OR NOT LAME_INCLUDE_DIR)
+	message(FATAL_ERROR "libmp3lame not found - install libmp3lame-dev")
+endif()
+add_library(mp3lame_imported UNKNOWN IMPORTED)
+set_target_properties(mp3lame_imported PROPERTIES
+	IMPORTED_LOCATION "${LAME_LIBRARY}"
+	INTERFACE_INCLUDE_DIRECTORIES "${LAME_INCLUDE_DIR}")

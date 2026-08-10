@@ -1,0 +1,50 @@
+diff -ru a/cmake/config.h.cmake b/cmake/config.h.cmake
+--- a/cmake/config.h.cmake	2026-08-06 22:40:26.303611527 +0200
++++ b/cmake/config.h.cmake	2026-08-06 22:41:23.004993294 +0200
+@@ -6,3 +6,5 @@
+ #cmakedefine HAVE_LIBC
+ #cmakedefine SIZEOF_INT @SIZEOF_INT@
+ #cmakedefine01 fftw3f_FOUND
++#cmakedefine HAVE_FEC_H
++#cmakedefine HAVE_LIBFEC
+diff -ru a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt	2026-08-06 22:40:26.303611527 +0200
++++ b/CMakeLists.txt	2026-08-06 22:41:07.352613591 +0200
+@@ -74,6 +74,17 @@
+     find_package(fftw3f)
+ endif()
+ 
++# optional external libfec (Phil Karn) - accelerated convolutional and
++# Reed-Solomon codes; mirrors the AC_CHECK_HEADERS/AC_CHECK_LIB checks in
++# configure.ac, which the CMake build was missing. Linked by its resolved
++# path (not the bare "fec" name) because that name collides with liquid's
++# own internal "fec" OBJECT library target below.
++check_include_file(fec.h HAVE_FEC_H)
++find_library(LIBFEC_LIBRARY NAMES fec)
++if (LIBFEC_LIBRARY)
++    check_library_exists("${LIBFEC_LIBRARY}" create_viterbi27 "" HAVE_LIBFEC)
++endif()
++
+ # cross-platform threads (e.g. thread.h for C11
+ # https://cmake.org/cmake/help/latest/module/FindThreads.html
+ # https://en.cppreference.com/w/c/header/threads
+@@ -469,6 +480,9 @@
+     if (fftw3f_FOUND)
+         target_link_libraries(${target} fftw3f)
+     endif()
++    if (HAVE_LIBFEC)
++        target_link_libraries(${target} ${LIBFEC_LIBRARY})
++    endif()
+ endforeach()
+ 
+ configure_file(include/liquid.h ${CMAKE_CURRENT_BINARY_DIR}/liquid/liquid.h COPYONLY)
+@@ -563,6 +577,9 @@
+ if (fftw3f_FOUND)
+     string(APPEND LIQUID_PC_LIBS_PRIVATE " -lfftw3f")
+ endif()
++if (HAVE_LIBFEC)
++    string(APPEND LIQUID_PC_LIBS_PRIVATE " -lfec")
++endif()
+ 
+ configure_file(
+     cmake/liquid-dsp.pc.in

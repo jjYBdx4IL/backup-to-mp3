@@ -166,7 +166,7 @@ AmpMessage amp_build_message(const std::vector<uint8_t>& raw_file, const AmpFile
 		// --- header (announce) modem content: repeat_header copies, this transmission only ---
 		tx.header_text = call_from_to;
 		for (int i = 0; i < p.repeat_header; i++) {
-			tx.header_text += amp_line("<PROG ", "{" + hash + "}amp2mp3 0.1");
+			tx.header_text += amp_line("<PROG ", "{" + hash + "}mfsk_tool 0.1");
 			tx.header_text += amp_line("<FILE ", "{" + hash + "}" + dttm + ":" + p.filename);
 			tx.header_text += amp_line("<ID ", "{" + hash + "}" + p.my_call + " ");
 			tx.header_text += amp_line("<SIZE ", "{" + hash + "}" + szbuf);
@@ -243,6 +243,7 @@ void amp_parse_lines(const std::string& text, AmpReceiveState& st)
 				st.dttm = rest.substr(0, colon);
 				st.filename = rest.substr(colon + 1);
 				st.have_file = true;
+				st.file_hits++;
 				break;
 			}
 			case _SIZE: {
@@ -251,18 +252,19 @@ void amp_parse_lines(const std::string& text, AmpReceiveState& st)
 					if (!st.have_file || st.hash == h) {
 						st.filesize = fs; st.numblocks = nb; st.blocksize = bs;
 						st.have_size = true;
+						st.size_hits++;
 					}
 				}
 				break;
 			}
 			case _PROG: {
 				size_t rb = content.find('}');
-				if (rb != std::string::npos) st.prog = content.substr(rb + 1);
+				if (rb != std::string::npos) { st.prog = content.substr(rb + 1); st.prog_hits++; }
 				break;
 			}
 			case _ID: {
 				size_t rb = content.find('}');
-				if (rb != std::string::npos) st.call_info = content.substr(rb + 1);
+				if (rb != std::string::npos) { st.call_info = content.substr(rb + 1); st.id_hits++; }
 				break;
 			}
 			case _DATA: {
@@ -273,8 +275,11 @@ void amp_parse_lines(const std::string& text, AmpReceiveState& st)
 				size_t rb = content.find('}');
 				if (colon == std::string::npos || rb == std::string::npos || rb < colon) break;
 				int blknbr = atoi(content.substr(colon + 1, rb - colon - 1).c_str());
-				if (blknbr > 0 && st.blocks.find(blknbr) == st.blocks.end())
-					st.blocks[blknbr] = content.substr(rb + 1);
+				if (blknbr > 0) {
+					st.block_hits[blknbr]++;
+					if (st.blocks.find(blknbr) == st.blocks.end())
+						st.blocks[blknbr] = content.substr(rb + 1);
+				}
 				if (!st.have_file) st.hash = h; // tolerate data arriving before/without a clean FILE line
 				break;
 			}

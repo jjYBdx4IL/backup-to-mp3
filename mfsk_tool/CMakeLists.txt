@@ -1,5 +1,14 @@
 cmake_minimum_required(VERSION 3.19)
-project(fldigi_amp_harness CXX)
+project(mfsk_tool CXX)
+
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+	execute_process(COMMAND id -u OUTPUT_VARIABLE HARNESS_UID OUTPUT_STRIP_TRAILING_WHITESPACE)
+	if(HARNESS_UID EQUAL 0)
+		set(CMAKE_INSTALL_PREFIX "/usr/local" CACHE PATH "Install path prefix" FORCE)
+	else()
+		set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local" CACHE PATH "Install path prefix" FORCE)
+	endif()
+endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -68,17 +77,21 @@ add_dependencies(harness_stubs fldigi_build)
 add_library(harness_amp_proto STATIC src/amp_proto.cxx)
 target_link_libraries(harness_amp_proto PUBLIC harness_compile_settings)
 
-add_executable(fldigi_amp_tool src/main.cxx)
-target_link_libraries(fldigi_amp_tool PRIVATE
-	harness_stubs harness_amp_proto fldigi_harness_objs harness_compile_settings
+add_library(harness_mp3_io STATIC src/mp3_io.cxx)
+target_link_libraries(harness_mp3_io PUBLIC mp3lame_imported PkgConfig::MPG123 PkgConfig::SNDFILE PkgConfig::SAMPLERATE)
+
+add_executable(mfsk_tool src/main.cxx)
+target_link_libraries(mfsk_tool PRIVATE
+	harness_stubs harness_amp_proto harness_mp3_io fldigi_harness_objs harness_compile_settings
 )
+install(TARGETS mfsk_tool RUNTIME DESTINATION bin)
 
 add_executable(analyze_repeats src/analyze_repeats.cxx)
 target_link_libraries(analyze_repeats PRIVATE harness_amp_proto harness_compile_settings)
 
 add_executable(bitrate_sweep src/bitrate_sweep.cxx)
 target_link_libraries(bitrate_sweep PRIVATE
-	harness_stubs fldigi_harness_objs harness_compile_settings
+	harness_stubs harness_mp3_io fldigi_harness_objs harness_compile_settings
 )
 
 add_executable(rsid_check src/rsid_check.cxx)
@@ -90,7 +103,7 @@ if(BUILD_TESTING)
 	# Digital (no airgap simulation) round-trip — REQUIREMENTS.md verification #1a.
 	add_test(NAME roundtrip_small
 		COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/roundtrip_test.sh
-			$<TARGET_FILE:fldigi_amp_tool>
+			$<TARGET_FILE:mfsk_tool>
 			${CMAKE_CURRENT_SOURCE_DIR}/testdata/small.txt
 			${CMAKE_CURRENT_BINARY_DIR}/test-tmp/roundtrip_small
 	)
@@ -103,16 +116,38 @@ if(BUILD_TESTING)
 	# give it room.
 	add_test(NAME roundtrip_generated_archive
 		COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/roundtrip_generated_archive_test.sh
-			$<TARGET_FILE:fldigi_amp_tool>
+			$<TARGET_FILE:mfsk_tool>
 			${CMAKE_CURRENT_SOURCE_DIR}/src
 			${CMAKE_CURRENT_BINARY_DIR}/test-tmp/roundtrip_generated_archive
 	)
 	set_tests_properties(roundtrip_generated_archive PROPERTIES TIMEOUT 300)
 
+	# MP3 encode at the default CBR bitrate (112kbps) must succeed - i.e. encode's
+	# own built-in verify pass (decode the finished MP3 back, byte-compare
+	# against the input) must pass. See src/mp3_io.cxx / main.cxx's encode().
+	add_test(NAME mp3_encode_default_bitrate
+		COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/mp3_encode_default_bitrate_test.sh
+			$<TARGET_FILE:mfsk_tool>
+			${CMAKE_CURRENT_SOURCE_DIR}/src
+			${CMAKE_CURRENT_BINARY_DIR}/test-tmp/mp3_encode_default_bitrate
+	)
+	set_tests_properties(mp3_encode_default_bitrate PROPERTIES TIMEOUT 120)
+
+	# Mirror image: a deliberately too-low CBR bitrate (8kbps) must fail encode's
+	# verify pass (nonzero exit), not silently produce a file that only fails
+	# to decode later, off on the watch.
+	add_test(NAME mp3_encode_low_bitrate
+		COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/mp3_encode_low_bitrate_test.sh
+			$<TARGET_FILE:mfsk_tool>
+			${CMAKE_CURRENT_SOURCE_DIR}/src
+			${CMAKE_CURRENT_BINARY_DIR}/test-tmp/mp3_encode_low_bitrate
+	)
+	set_tests_properties(mp3_encode_low_bitrate PROPERTIES TIMEOUT 120)
+
 	# rsid_check smoke test: confirm it runs cleanly over a real encoded WAV.
 	add_test(NAME rsid_check_smoke
 		COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/rsid_check_test.sh
-			$<TARGET_FILE:fldigi_amp_tool>
+			$<TARGET_FILE:mfsk_tool>
 			$<TARGET_FILE:rsid_check>
 			${CMAKE_CURRENT_SOURCE_DIR}/testdata/small.txt
 			${CMAKE_CURRENT_BINARY_DIR}/test-tmp/rsid_check_smoke
